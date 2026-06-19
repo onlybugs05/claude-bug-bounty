@@ -131,6 +131,18 @@ def severity_from_score(score: float) -> str:
     return "CRITICAL"
 
 
+# ─── GraphQL string escaping ──────────────────────────────────────────────────
+
+def _escape_graphql_string(s: str) -> str:
+    """Escape a value for safe interpolation inside a GraphQL double-quoted string."""
+    return (s
+            .replace("\\", "\\\\")
+            .replace('"', '\\"')
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t"))
+
+
 # ─── HackerOne dup check ──────────────────────────────────────────────────────
 
 def check_h1_dups(program_handle: str, vuln_keyword: str) -> list[dict]:
@@ -144,8 +156,8 @@ def check_h1_dups(program_handle: str, vuln_keyword: str) -> list[dict]:
             first: 10,
             order_by: {{ field: popular, direction: DESC }},
             where: {{
-              team: {{ handle: {{ _eq: "{program_handle}" }} }},
-              report: {{ title: {{ _icontains: "{vuln_keyword}" }} }}
+              team: {{ handle: {{ _eq: "{_escape_graphql_string(program_handle)}" }} }},
+              report: {{ title: {{ _icontains: "{_escape_graphql_string(vuln_keyword)}" }} }}
             }}
           ) {{
             nodes {{
@@ -333,7 +345,7 @@ def gate2_in_scope(program_handle: str) -> tuple[bool, dict]:
         print(f"\n  {DIM}Checking HackerOne scope for '{program_handle}'...{RESET}")
         try:
             query = {
-                "query": f'{{ team(handle: "{program_handle}") {{ policy_scopes(archived: false) {{ edges {{ node {{ asset_type asset_identifier eligible_for_bounty }} }} }} }} }}'
+                "query": f'{{ team(handle: "{_escape_graphql_string(program_handle)}") {{ policy_scopes(archived: false) {{ edges {{ node {{ asset_type asset_identifier eligible_for_bounty }} }} }} }} }}'
             }
             req = urllib.request.Request(
                 "https://hackerone.com/graphql",

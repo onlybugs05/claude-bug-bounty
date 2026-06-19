@@ -41,6 +41,17 @@ CYAN   = "\033[96m"
 BOLD   = "\033[1m"
 RESET  = "\033[0m"
 
+
+def _escape_graphql_string(s: str) -> str:
+    """Escape a value for safe interpolation inside a GraphQL double-quoted string."""
+    return (s
+            .replace("\\", "\\\\")
+            .replace('"', '\\"')
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t"))
+
+
 # ─── Tech → npm/pypi/cargo package name mapping ───────────────────────────────
 TECH_TO_PACKAGE = {
     "nextjs":    ("npm", "next"),
@@ -200,7 +211,7 @@ def fetch_hackerone_hacktivity(keyword: str, limit: int = 5) -> list[dict]:
             first: {limit},
             order_by: {{ field: popular, direction: DESC }},
             where: {{
-              report: {{ title: {{ _icontains: "{keyword}" }} }},
+              report: {{ title: {{ _icontains: "{_escape_graphql_string(keyword)}" }} }},
               disclosed_at: {{ _is_null: false }}
             }}
           ) {{
@@ -385,7 +396,7 @@ def main():
                 first: 20,
                 order_by: {{ field: popular, direction: DESC }},
                 where: {{
-                  team: {{ handle: {{ _eq: "{args.hackerone_program}" }} }},
+                  team: {{ handle: {{ _eq: "{_escape_graphql_string(args.hackerone_program)}" }} }},
                   disclosed_at: {{ _is_null: false }}
                 }}
               ) {{
