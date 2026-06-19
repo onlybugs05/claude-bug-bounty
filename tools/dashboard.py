@@ -55,13 +55,7 @@ CURSOR_UP = lambda n: f"{CSI}{n}A"
 CURSOR_COL1 = "\r"
 
 # Colours — match the bash scripts' palette so the dashboard feels native.
-GREEN = CSI + "0;32m"
-RED = CSI + "0;31m"
-YELLOW = CSI + "1;33m"
-CYAN = CSI + "0;36m"
-DIM = CSI + "2m"
-BOLD = CSI + "1m"
-RESET = CSI + "0m"
+from tools._colors import GREEN, RED, YELLOW, CYAN, DIM, BOLD, RESET  # noqa: E402
 
 SPINNER_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 

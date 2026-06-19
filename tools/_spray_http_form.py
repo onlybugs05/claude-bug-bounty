@@ -32,52 +32,27 @@ Env contract (all set by spray_orchestrator.sh):
   AUDIT_LOG               JSONL output path
 """
 from __future__ import annotations
-import hashlib
 import json
 import os
 import random
 import re
-import ssl
 import sys
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
 
-# Permissive SSL — many BB targets use self-signed staging certs
-SSL_CTX = ssl.create_default_context()
-SSL_CTX.check_hostname = False
-SSL_CTX.verify_mode = ssl.CERT_NONE
-
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Bug-Bounty-Research"
-
-
-def env(name: str, default: str = "") -> str:
-    return os.environ.get(name, default)
-
-
-def env_required(name: str) -> str:
-    v = os.environ.get(name)
-    if not v:
-        print(f"[-] Missing required env var: {name}", file=sys.stderr)
-        sys.exit(1)
-    return v
-
-
-def read_lines(path: str) -> list[str]:
-    with open(path) as f:
-        return [line.strip() for line in f if line.strip()]
-
-
-def sha256_prefix(s: str) -> str:
-    return hashlib.sha256(s.encode("utf-8")).hexdigest()[:12]
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _REPO not in sys.path:
+    sys.path.insert(0, _REPO)
+from tools._spray_common import (  # noqa: E402
+    env, env_required, read_lines, sha256_prefix, audit as _audit_record,
+    SSL_CTX, USER_AGENT,
+)
 
 
 def audit(record: dict) -> None:
-    record["ts"] = datetime.now(timezone.utc).isoformat()
-    with open(AUDIT_LOG_PATH, "a") as f:
-        f.write(json.dumps(record) + "\n")
+    _audit_record(record, AUDIT_LOG_PATH)
 
 
 def _build_opener():

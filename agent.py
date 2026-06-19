@@ -102,14 +102,7 @@ except Exception as _brain_err:
     OLLAMA_HOST = "http://localhost:11434"
 
 # ── Colours ───────────────────────────────────────────────────────────────────
-GREEN   = "\033[0;32m"
-CYAN    = "\033[0;36m"
-YELLOW  = "\033[1;33m"
-RED     = "\033[0;31m"
-MAGENTA = "\033[0;35m"
-BOLD    = "\033[1m"
-DIM     = "\033[2m"
-NC      = "\033[0m"
+from tools._colors import GREEN, CYAN, YELLOW, RED, MAGENTA, BOLD, DIM, NC  # noqa: E402
 
 MAX_OBS_CHARS    = 3000    # truncate tool output kept in observation buffer
 MAX_CTX_CHARS    = 18000   # max chars sent to LLM per step

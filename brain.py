@@ -325,13 +325,10 @@ MAX_CTX   = 32768   # context window to send (32K — safe for most phases)
 MAX_RESP  = 6000    # max tokens to generate for analysis
 MAX_RESP_REPORT = 10000  # full context for report writing
 
-GREEN   = "\033[0;32m"
-CYAN    = "\033[0;36m"
-YELLOW  = "\033[1;33m"
-MAGENTA = "\033[0;35m"
-BOLD    = "\033[1m"
-DIM     = "\033[2m"
-NC      = "\033[0m"
+_BRAIN_REPO = os.path.dirname(os.path.abspath(__file__))
+if _BRAIN_REPO not in sys.path:
+    sys.path.insert(0, _BRAIN_REPO)
+from tools._colors import GREEN, CYAN, YELLOW, MAGENTA, BOLD, DIM, NC  # noqa: E402
 
 # ── System prompt: senior pentester mindset ────────────────────────────────────
 BRAIN_SYSTEM = """You are an elite penetration tester and red team operator with 12+ years of professional VAPT experience.

@@ -20,7 +20,6 @@ import itertools
 import ipaddress
 import json
 import os
-import signal
 import subprocess
 import sys
 from datetime import datetime
@@ -30,6 +29,8 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tools.auth_session import AuthSession, add_cli_args, session_from_args  # noqa: E402
 from tools.banner import print_banner  # noqa: E402
+from tools._colors import GREEN, RED, YELLOW, CYAN, BOLD, NC, log  # noqa: E402
+from tools._run import run_cmd  # noqa: E402
 
 # Process-wide AuthSession. Populated in main() once flags are parsed and
 # read by run_recon / run_vuln_scan so every subprocess inherits the same
@@ -88,52 +89,7 @@ FINDINGS_DIR = os.path.join(BASE_DIR, "findings")
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
 WORDLIST_DIR = os.path.join(BASE_DIR, "wordlists")
 
-# Colors
-GREEN = "\033[0;32m"
-RED = "\033[0;31m"
-YELLOW = "\033[1;33m"
-CYAN = "\033[0;36m"
-BOLD = "\033[1m"
-NC = "\033[0m"
 
-
-def log(level, msg):
-    colors = {"ok": GREEN, "err": RED, "warn": YELLOW, "info": CYAN}
-    symbols = {"ok": "+", "err": "-", "warn": "!", "info": "*"}
-    print(f"{colors.get(level, '')}{BOLD}[{symbols.get(level, '*')}]{NC} {msg}")
-
-
-def run_cmd(cmd, cwd=None, timeout=600):
-    """Run a shell command and return (success, output).
-
-    Uses process groups (os.setsid) so that on timeout the entire child tree
-    is killed via os.killpg, preventing orphan processes from accumulating
-    during long-running hunts.
-    """
-    proc = None
-    try:
-        proc = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            text=True, cwd=cwd, preexec_fn=os.setsid,
-        )
-        stdout, _ = proc.communicate(timeout=timeout)
-        return proc.returncode == 0, stdout or ""
-    except subprocess.TimeoutExpired:
-        if proc is not None:
-            try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except Exception:
-                proc.kill()
-            proc.wait()
-        return False, "Command timed out"
-    except Exception as e:
-        if proc is not None:
-            try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except Exception:
-                proc.kill()
-            proc.wait()
-        return False, str(e)
 
 
 def check_tools():

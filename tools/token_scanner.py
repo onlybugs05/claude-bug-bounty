@@ -35,16 +35,10 @@ _REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO not in sys.path:
     sys.path.insert(0, _REPO)
 from tools.banner import print_banner  # noqa: E402
-
-# ── Colors ──────────────────────────────────────────────────────────────────
-
-RED = "\033[91m"
-YELLOW = "\033[93m"
-GREEN = "\033[92m"
-CYAN = "\033[96m"
-BOLD = "\033[1m"
-DIM = "\033[2m"
-RESET = "\033[0m"
+from tools._colors import (  # noqa: E402
+    RED_BRIGHT as RED, YELLOW_BRIGHT as YELLOW, GREEN_BRIGHT as GREEN,
+    CYAN_BRIGHT as CYAN, BOLD, DIM, RESET,
+)
 
 # ── Data types ──────────────────────────────────────────────────────────────
 

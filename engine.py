@@ -50,19 +50,14 @@ REPORTS  = HERE / "reports"
 CONFIG   = Path.home() / ".bughunter" / "config.json"
 
 # ── Colors ─────────────────────────────────────────────────────────────────────
-GREEN  = "\033[0;32m"
-CYAN   = "\033[0;36m"
-YELLOW = "\033[1;33m"
-RED    = "\033[0;31m"
-BOLD   = "\033[1m"
-DIM    = "\033[2m"
-NC     = "\033[0m"
+from tools._colors import GREEN, CYAN, YELLOW, RED, BOLD, DIM, NC  # noqa: E402
+from tools._colors import log as _log  # noqa: E402
 
 
-def ok(msg):   print(f"{GREEN}{BOLD}[+]{NC} {msg}")
-def info(msg): print(f"{CYAN}{BOLD}[*]{NC} {msg}")
-def warn(msg): print(f"{YELLOW}{BOLD}[!]{NC} {msg}")
-def err(msg):  print(f"{RED}{BOLD}[-]{NC} {msg}")
+def ok(msg):   _log("ok", msg)
+def info(msg): _log("info", msg)
+def warn(msg): _log("warn", msg)
+def err(msg):  _log("err", msg)
 
 
 def header(title: str):

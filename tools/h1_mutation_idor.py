@@ -13,20 +13,26 @@ Usage:
 
 import argparse
 import json
-import ssl
+import os
+import sys
 import urllib.request
 import urllib.error
 import urllib.parse
 import re
 import time
 
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _REPO not in sys.path:
+    sys.path.insert(0, _REPO)
+from tools._ssl_ctx import get_permissive_ssl_context  # noqa: E402
+
 BASE = "https://hackerone.com"
 
+_SSL_CTX = get_permissive_ssl_context()
+
+
 def make_ctx():
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    return ctx
+    return _SSL_CTX
 
 def get_csrf(cookie: str) -> str:
     req = urllib.request.Request(

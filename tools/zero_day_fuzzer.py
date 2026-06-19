@@ -22,8 +22,6 @@ import argparse
 import json
 import os
 import re
-import signal
-import subprocess
 import sys
 import time
 import hashlib
@@ -31,34 +29,16 @@ from datetime import datetime
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 FINDINGS_DIR = os.path.join(BASE_DIR, "findings")
+
+from tools._run import run_cmd as _run_cmd  # noqa: E402
+from tools._colors import RED, YELLOW, CYAN, NC  # noqa: E402
 
 
 def run_cmd(cmd, timeout=15):
-    proc = None
-    try:
-        proc = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, preexec_fn=os.setsid,
-        )
-        stdout, stderr = proc.communicate(timeout=timeout)
-        return proc.returncode == 0, stdout, stderr
-    except subprocess.TimeoutExpired:
-        if proc is not None:
-            try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except Exception:
-                proc.kill()
-            proc.wait()
-        return False, "", "timeout"
-    except Exception as e:
-        if proc is not None:
-            try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except Exception:
-                proc.kill()
-            proc.wait()
-        return False, "", str(e)
+    return _run_cmd(cmd, timeout=timeout, split_stderr=True)
 
 
 def curl_request(url, method="GET", headers=None, data=None, timeout=10):
@@ -127,10 +107,9 @@ class ZeroDayFuzzer:
             "timestamp": datetime.now().isoformat()
         }
         self.findings.append(finding)
-        sev_colors = {"critical": "\033[0;31m", "high": "\033[0;31m", "medium": "\033[1;33m", "low": "\033[0;36m"}
+        sev_colors = {"critical": RED, "high": RED, "medium": YELLOW, "low": CYAN}
         color = sev_colors.get(severity, "")
-        reset = "\033[0m"
-        print(f"    {color}[FINDING]{reset} [{severity.upper()}] {title}")
+        print(f"    {color}[FINDING]{NC} [{severity.upper()}] {title}")
 
     def test_http_method_tampering(self):
         """Test for HTTP method override/tampering vulnerabilities."""

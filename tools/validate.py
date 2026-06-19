@@ -12,7 +12,6 @@ Usage:
 import argparse
 import json
 import os
-import ssl
 import sys
 import urllib.request
 import urllib.error
@@ -22,25 +21,13 @@ _REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO not in sys.path:
     sys.path.insert(0, _REPO)
 from tools.banner import print_banner  # noqa: E402
+from tools._colors import (  # noqa: E402
+    RED_BRIGHT as RED, YELLOW_BRIGHT as YELLOW, GREEN_BRIGHT as GREEN,
+    CYAN_BRIGHT as CYAN, BLUE_BRIGHT as BLUE, BOLD, DIM, RESET,
+)
+from tools._ssl_ctx import get_ssl_context  # noqa: E402
 
-# macOS: Python may not have system SSL certs. Use unverified context for API queries.
-_SSL_CTX = ssl.create_default_context()
-try:
-    import certifi
-    _SSL_CTX = ssl.create_default_context(cafile=certifi.where())
-except ImportError:
-    _SSL_CTX.check_hostname = False
-    _SSL_CTX.verify_mode = ssl.CERT_NONE
-
-# ─── Color codes ──────────────────────────────────────────────────────────────
-RED    = "\033[91m"
-YELLOW = "\033[93m"
-GREEN  = "\033[92m"
-CYAN   = "\033[96m"
-BLUE   = "\033[94m"
-BOLD   = "\033[1m"
-DIM    = "\033[2m"
-RESET  = "\033[0m"
+_SSL_CTX = get_ssl_context()
 
 # ─── CVSS 4.0 scoring ─────────────────────────────────────────────────────────
 # Implements the CVSS 4.0 macro-vector approach from FIRST.org.
