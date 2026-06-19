@@ -177,7 +177,11 @@ def check_h1_dups(program_handle: str, vuln_keyword: str) -> list[dict]:
             if r:
                 results.append(r)
         return results
-    except Exception:
+    except Exception as exc:
+        print(
+            f"  {YELLOW}HackerOne duplicate check failed: {exc}{RESET}",
+            file=sys.stderr,
+        )
         return []
 
 
@@ -220,8 +224,17 @@ def load_json_file(path: str) -> dict:
             return json.load(fh)
     except FileNotFoundError:
         return {}
-    except Exception as exc:
-        print(f"  {YELLOW}Could not read JSON file {path}: {exc}{RESET}")
+    except json.JSONDecodeError as exc:
+        print(
+            f"  {YELLOW}Malformed JSON in {path}: {exc}{RESET}",
+            file=sys.stderr,
+        )
+        return {}
+    except OSError as exc:
+        print(
+            f"  {YELLOW}Could not read file {path}: {exc}{RESET}",
+            file=sys.stderr,
+        )
         return {}
 
 
@@ -349,8 +362,11 @@ def gate2_in_scope(program_handle: str) -> tuple[bool, dict]:
                     node = edge.get("node", {})
                     bounty = " (eligible)" if node.get("eligible_for_bounty") else ""
                     print(f"    • [{node.get('asset_type','?')}] {node.get('asset_identifier','?')}{bounty}")
-        except Exception:
-            print(f"  {YELLOW}Could not fetch scope (network error){RESET}")
+        except Exception as exc:
+            print(
+                f"  {YELLOW}Could not fetch scope: {type(exc).__name__}: {exc}{RESET}",
+                file=sys.stderr,
+            )
 
     passed = asset_in_scope and not_excluded and version_ok
     notes: dict = {
